@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router';
-import { Home, BookOpen, Bot, ChevronLeft, Plus, Minus, LogOut } from 'lucide-react';
+import { Home, BookOpen, Bot, ChevronLeft, Plus, Minus, LogOut, UserRound } from 'lucide-react';
 import { useProgressContext } from '../context/ProgressContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -17,7 +17,6 @@ export function Root() {
 
   const isHome = location.pathname === '/';
 
-  // Close menu on outside click
   useEffect(() => {
     if (!showUserMenu) return;
     const close = () => setShowUserMenu(false);
@@ -30,125 +29,165 @@ export function Root() {
     signOut();
   };
 
+  /* ── Pill de tamaño de letra (reutilizable) ── */
+  const FontSizeControls = () => (
+    <div
+      className="flex items-center gap-1 rounded-2xl px-3 py-2"
+      style={{ backgroundColor: 'rgba(255,255,255,0.18)' }}
+    >
+      <button
+        onClick={() => setFontSize(progress.fontSizeLevel - 1)}
+        disabled={progress.fontSizeLevel === 0}
+        className="text-white disabled:opacity-40 hover:bg-white/20 rounded-lg flex items-center justify-center transition-colors"
+        style={{ width: 36, height: 36, minHeight: 36, minWidth: 36, border: 'none', backgroundColor: 'transparent' }}
+        aria-label="Reducir tamaño de letra"
+      >
+        <Minus size={16} />
+      </button>
+      <span className="text-white select-none" style={{ fontSize: '1.05rem', fontWeight: 700, padding: '0 4px' }}>A</span>
+      <button
+        onClick={() => setFontSize(progress.fontSizeLevel + 1)}
+        disabled={progress.fontSizeLevel === 2}
+        className="text-white disabled:opacity-40 hover:bg-white/20 rounded-lg flex items-center justify-center transition-colors"
+        style={{ width: 36, height: 36, minHeight: 36, minWidth: 36, border: 'none', backgroundColor: 'transparent' }}
+        aria-label="Aumentar tamaño de letra"
+      >
+        <Plus size={16} />
+      </button>
+    </div>
+  );
+
+  /* ── Botón "Mi perfil" con círculo blanco ── */
+  const UserProfileButton = () => (
+    <div className="relative flex justify-end">
+      <button
+        onClick={e => { e.stopPropagation(); setShowUserMenu(v => !v); }}
+        className="flex flex-col items-center gap-1 hover:opacity-90 transition-opacity"
+        style={{ border: 'none', backgroundColor: 'transparent', minHeight: 'auto', minWidth: 'auto', cursor: 'pointer' }}
+        aria-label="Mi perfil"
+      >
+        <div
+          className="rounded-full flex items-center justify-center shadow-md"
+          style={{ width: 56, height: 56, backgroundColor: 'white', flexShrink: 0 }}
+        >
+          <UserRound size={30} style={{ color: 'var(--color-azul)' }} strokeWidth={1.8} />
+        </div>
+        <span className="text-white" style={{ fontSize: '0.8rem', fontWeight: 600, lineHeight: 1 }}>
+          Mi perfil
+        </span>
+      </button>
+
+      {/* Dropdown */}
+      {showUserMenu && user && (
+        <div
+          className="absolute right-0 rounded-2xl shadow-xl py-3 z-50"
+          style={{
+            top: 'calc(100% + 8px)',
+            backgroundColor: 'white',
+            border: '1.5px solid var(--color-border)',
+            minWidth: 230,
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="px-4 pb-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+            <div className="flex items-center gap-3">
+              <div
+                className="rounded-full flex items-center justify-center shrink-0"
+                style={{ width: 44, height: 44, backgroundColor: 'var(--color-azul-light)', border: '2px solid var(--color-azul)' }}
+              >
+                <UserRound size={22} style={{ color: 'var(--color-azul)' }} strokeWidth={1.8} />
+              </div>
+              <div>
+                <p style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>
+                  {user.name}
+                </p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--color-muted)', margin: 0 }}>
+                  {user.email}
+                </p>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+            style={{ minHeight: 48, color: 'var(--color-error)', border: 'none', backgroundColor: 'transparent' }}
+          >
+            <LogOut size={18} />
+            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Cerrar sesión</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)' }}>
-      {/* Header */}
+      {/* ══════════ HEADER ══════════ */}
       <header
         className="sticky top-0 z-50 shadow-md"
         style={{ backgroundColor: 'var(--color-azul)' }}
       >
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          {/* Left: Back button or logo */}
-          <div className="flex items-center gap-3">
-            {!isHome && (
-              <button
-                onClick={() => navigate(-1)}
-                className="flex items-center gap-1 text-white rounded-lg px-2 py-2 transition-colors hover:bg-white/20 min-h-[48px] min-w-[48px] justify-center"
-                aria-label="Volver atrás"
-              >
-                <ChevronLeft size={24} />
-                <span className="hidden sm:inline" style={{ fontSize: '0.95rem' }}>Volver</span>
-              </button>
-            )}
-            {isHome && (
+        <div className="max-w-4xl mx-auto px-4 py-3">
+
+          {/* ── NON-HOME: 3 columnas Volver | A controls | Mi perfil ── */}
+          {!isHome && (
+            <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
+              {/* Col izquierda: Volver */}
+              <div className="flex justify-start">
+                <button
+                  onClick={() => navigate(-1)}
+                  className="flex flex-col items-center gap-1 hover:opacity-90 transition-opacity"
+                  style={{ border: 'none', backgroundColor: 'transparent', minHeight: 'auto', minWidth: 'auto', cursor: 'pointer' }}
+                  aria-label="Volver atrás"
+                >
+                  <div
+                    className="rounded-full flex items-center justify-center shadow-md"
+                    style={{ width: 56, height: 56, backgroundColor: 'white' }}
+                  >
+                    <ChevronLeft size={30} style={{ color: 'var(--color-azul)' }} strokeWidth={2.2} />
+                  </div>
+                  <span className="text-white" style={{ fontSize: '0.8rem', fontWeight: 600, lineHeight: 1 }}>
+                    Volver
+                  </span>
+                </button>
+              </div>
+
+              {/* Col central: A−/+ */}
+              <div className="flex justify-center">
+                <FontSizeControls />
+              </div>
+
+              {/* Col derecha: Mi perfil */}
+              <UserProfileButton />
+            </div>
+          )}
+
+          {/* ── HOME: Logo | A controls | Mi perfil ── */}
+          {isHome && (
+            <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
+              {/* Logo */}
               <div className="flex items-center gap-2">
                 <span style={{ fontSize: '1.6rem' }}>🏥</span>
                 <div>
-                  <p className="text-white font-bold" style={{ fontSize: '1rem', lineHeight: 1.2 }}>
+                  <p className="text-white" style={{ fontSize: '0.95rem', fontWeight: 700, lineHeight: 1.2, margin: 0 }}>
                     IA y Salud
                   </p>
-                  <p className="text-white/80" style={{ fontSize: '0.75rem' }}>
+                  <p className="text-white/80" style={{ fontSize: '0.72rem', margin: 0 }}>
                     HUAP · Posta Central
                   </p>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Right: Font size controls + user avatar */}
-          <div className="flex items-center gap-2">
-            <span className="text-white/80 hidden sm:block" style={{ fontSize: '0.8rem' }}>
-              Tamaño:
-            </span>
-            <button
-              onClick={() => setFontSize(progress.fontSizeLevel - 1)}
-              disabled={progress.fontSizeLevel === 0}
-              className="text-white rounded-lg border border-white/50 px-3 py-2 disabled:opacity-40 hover:bg-white/20 min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label="Reducir tamaño de letra"
-              title="Reducir letra"
-            >
-              <Minus size={16} />
-            </button>
-            <span className="text-white font-bold" style={{ fontSize: '1rem' }}>A</span>
-            <button
-              onClick={() => setFontSize(progress.fontSizeLevel + 1)}
-              disabled={progress.fontSizeLevel === 2}
-              className="text-white rounded-lg border border-white/50 px-3 py-2 disabled:opacity-40 hover:bg-white/20 min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label="Aumentar tamaño de letra"
-              title="Agrandar letra"
-            >
-              <Plus size={16} />
-            </button>
-
-            {/* User avatar button */}
-            {user && (
-              <div className="relative ml-1">
-                <button
-                  onClick={e => { e.stopPropagation(); setShowUserMenu(v => !v); }}
-                  className="flex items-center justify-center rounded-full border-2 border-white/70 hover:border-white transition-all min-h-[44px] min-w-[44px]"
-                  style={{ width: 44, height: 44, backgroundColor: '#e8f0f8', flexShrink: 0 }}
-                  aria-label="Menú de usuario"
-                  title={user.name}
-                >
-                  <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-azul)' }}>
-                    {user.avatar}
-                  </span>
-                </button>
-
-                {/* Dropdown menu */}
-                {showUserMenu && (
-                  <div
-                    className="absolute right-0 top-12 rounded-2xl shadow-xl py-3 z-50"
-                    style={{
-                      backgroundColor: 'white',
-                      border: '1.5px solid var(--color-border)',
-                      minWidth: 220,
-                    }}
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <div className="px-4 pb-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="rounded-full flex items-center justify-center shrink-0"
-                          style={{ width: 42, height: 42, backgroundColor: 'var(--color-azul-light)', border: '2px solid var(--color-azul)' }}
-                        >
-                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-azul)' }}>
-                            {user.avatar}
-                          </span>
-                        </div>
-                        <div>
-                          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>
-                            {user.name}
-                          </p>
-                          <p style={{ fontSize: '0.75rem', color: 'var(--color-muted)', margin: 0 }}>
-                            {user.email}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                      style={{ minHeight: 48, color: 'var(--color-error)', border: 'none', backgroundColor: 'transparent' }}
-                    >
-                      <LogOut size={18} />
-                      <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Cerrar sesión</span>
-                    </button>
-                  </div>
-                )}
+              {/* A−/+ centrado */}
+              <div className="flex justify-center">
+                <FontSizeControls />
               </div>
-            )}
-          </div>
+
+              {/* Mi perfil */}
+              <UserProfileButton />
+            </div>
+          )}
+
         </div>
       </header>
 
