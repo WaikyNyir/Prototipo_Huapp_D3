@@ -11,9 +11,9 @@ export interface MockUser {
 // Mock Google users (demonstration only)
 const MOCK_GOOGLE_USER: MockUser = {
   id: 'user-001',
-  name: 'María González',
-  email: 'maria.gonzalez@gmail.com',
-  avatar: 'MG',
+  name: 'Ana Llancaleo',
+  email: 'ana.llancaleo@gmail.com',
+  avatar: 'AL',
   joinDate: 'Mayo 2026',
 };
 

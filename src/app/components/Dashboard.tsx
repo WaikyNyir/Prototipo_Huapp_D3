@@ -162,36 +162,7 @@ export function Dashboard() {
         </div>
       )}
 
-      {/* Welcome header */}
-      <div
-        className="rounded-2xl p-6 text-white shadow-lg"
-        style={{ background: 'linear-gradient(135deg, #1B4F7A 0%, #153d60 100%)' }}
-      >
-        <p className="text-white/80" style={{ fontSize: '0.9rem' }}>Hospital HUAP · Posta Central</p>
-        <h1 className="text-white mt-1" style={{ fontSize: '1.5rem', color: 'white' }}>
-          {user ? `¡Hola, ${user.name.split(' ')[0]}!` : 'IA y Salud'}
-        </h1>
-        <p className="text-white/90 mt-1" style={{ fontSize: '1rem' }}>
-          Guía Digital para Personas Mayores
-        </p>
 
-        {/* Overall progress */}
-        <div className="mt-4 bg-white/20 rounded-xl p-4 flex items-center gap-4">
-          <ProgressRing percentage={totalProgress.percentage} size={72} color="white" />
-          <div>
-            <p className="text-white/80" style={{ fontSize: '0.85rem' }}>Tu progreso total</p>
-            <p className="text-white font-bold" style={{ fontSize: '1.1rem' }}>
-              {totalProgress.completed} de {totalProgress.total} lecciones
-            </p>
-            <div className="w-full bg-white/30 rounded-full mt-2 h-2">
-              <div
-                className="h-2 rounded-full bg-white transition-all duration-700"
-                style={{ width: `${totalProgress.percentage}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Badges earned */}
       {progress.earnedBadges.length > 0 && (
