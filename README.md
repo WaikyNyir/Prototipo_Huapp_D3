@@ -1,11 +1,11 @@
 
   # Version 1.0 WebApp
 
-  This is a code bundle for Version 1.0 WebApp. The original project is available at https://www.figma.com/design/gRGgdO7r4FEg9X6JIvVGQ1/Version-1.0-WebApp.
+  Este el codigo prototipo del prototipo version 1.0 WebApp.
 
-  ## Running the code
+  ## Para correr el codigo
 
-  Run `npm i` to install the dependencies.
+  Poner el comando `npm install` para instalar las dependencias necesarias.
 
-  Run `npm run dev` to start the development server.
+  Luego `npm run dev` para comenzar a levantar el servicio localmente.
   
